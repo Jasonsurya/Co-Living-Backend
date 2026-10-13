@@ -17,12 +17,25 @@ const dokumenKontrakRoutes = require("./routes/dokumenKontrakRoute");
 
 const app = express();
 
-app.use(cors());
+// KONFIGURASI CORS EKSPLISIT UNTUK VERCEL & LOKAL
+app.use(cors({
+  origin: [
+    "https://co-living-management-system.vercel.app", 
+    "http://localhost:5173",
+    "http://localhost:3000"
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true
+}));
+
+// Menangani preflight request secara otomatis agar tidak diblokir browser
+app.options("*", cors());
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // FOLDER UPLOADS STATIC (Path Disesuaikan)
-// Menggunakan path.join(__dirname, "uploads") atau path.join(__dirname, "../uploads") sesuai struktur direktori project
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 // ENDPOINTS API
