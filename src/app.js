@@ -1,6 +1,5 @@
 const express = require("express");
 const path = require("path");
-const cors = require("cors");
 
 const kamarRoutes = require("./routes/kamarRoutes");
 const penghuniRoutes = require("./routes/penghuniRoutes");
@@ -17,25 +16,40 @@ const dokumenKontrakRoutes = require("./routes/dokumenKontrakRoute");
 
 const app = express();
 
-// KONFIGURASI CORS EKSPLISIT UNTUK VERCEL & LOKAL
-app.use(cors({
-  origin: [
-    "https://co-living-management-system.vercel.app", 
+// ==========================================
+// CUSTOM CORS & PREFLIGHT MIDDLEWARE MANUAL
+// ==========================================
+app.use((req, res, next) => {
+  const allowedOrigins = [
+    "https://co-living-management-system.vercel.app",
     "http://localhost:5173",
     "http://localhost:3000"
-  ],
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true
-}));
+  ];
+  
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  } else {
+    // Fallback mengizinkan domain Vercel secara langsung
+    res.setHeader("Access-Control-Allow-Origin", "https://co-living-management-system.vercel.app");
+  }
 
-// Menangani preflight request secara otomatis agar tidak diblokir browser
-app.options("*", cors());
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+
+  // Jika permintaannya adalah OPTIONS (preflight), langsung kembalikan status 200 (OK)
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+
+  next();
+});
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// FOLDER UPLOADS STATIC (Path Disesuaikan)
+// FOLDER UPLOADS STATIC
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 // ENDPOINTS API
