@@ -16,29 +16,12 @@ const dokumenKontrakRoutes = require("./routes/dokumenKontrakRoute");
 
 const app = express();
 
-// ==========================================
-// CUSTOM CORS & PREFLIGHT MIDDLEWARE MANUAL
-// ==========================================
 app.use((req, res, next) => {
-  const allowedOrigins = [
-    "https://co-living-management-system.vercel.app",
-    "http://localhost:5173",
-    "http://localhost:3000"
-  ];
-  
-  const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
-  } else {
-    // Fallback mengizinkan domain Vercel secara langsung
-    res.setHeader("Access-Control-Allow-Origin", "https://co-living-management-system.vercel.app");
-  }
-
+  res.setHeader("Access-Control-Allow-Origin", "*"); // Izinkan semua origin sementara untuk memastikan tembus
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
   res.setHeader("Access-Control-Allow-Credentials", "true");
 
-  // Jika permintaannya adalah OPTIONS (preflight), langsung kembalikan status 200 (OK)
   if (req.method === "OPTIONS") {
     return res.sendStatus(200);
   }
