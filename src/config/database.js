@@ -1,14 +1,25 @@
+
 const { Pool, types } = require("pg");
 require("dotenv").config();
 
 types.setTypeParser(1082, (val) => val);
+
+console.log(
+"DATABASE_URL tersedia:",
+Boolean(process.env.DATABASE_URL)
+);
+
+console.log(
+"DB_USER tersedia:",
+Boolean(process.env.DB_USER)
+);
 
 const pool = new Pool(
 process.env.DATABASE_URL
     ? {
         connectionString: process.env.DATABASE_URL,
         ssl: {
-        rejectUnauthorized: false, 
+        rejectUnauthorized: false,
         },
     }
     : {
