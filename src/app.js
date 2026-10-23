@@ -1,5 +1,7 @@
+
 const express = require("express");
 const path = require("path");
+const cors = require("cors");
 
 const kamarRoutes = require("./routes/kamarRoutes");
 const penghuniRoutes = require("./routes/penghuniRoutes");
@@ -16,26 +18,61 @@ const dokumenKontrakRoutes = require("./routes/dokumenKontrakRoute");
 
 const app = express();
 
-app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "*"); // Izinkan semua origin sementara untuk memastikan tembus
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
-  res.setHeader("Access-Control-Allow-Credentials", "true");
+// ======================================
+// KONFIGURASI CORS
+// ======================================
+const allowedOrigins = [
+    "https://co-living-management-system.vercel.app",
+    "http://localhost:5173",
+];
 
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(200);
-  }
+app.use(
+    cors({
+        origin: (origin, callback) => {
+            // Request tanpa Origin, misalnya server-to-server.
+            if (!origin || allowedOrigins.includes(origin)) {
+                return callback(null, true);
+            }
 
-  next();
-});
+            return callback(
+                new Error("Origin tidak diizinkan oleh CORS")
+            );
+        },
+        methods: [
+            "GET",
+            "POST",
+            "PUT",
+            "PATCH",
+            "DELETE",
+            "OPTIONS",
+        ],
+        allowedHeaders: [
+            "Content-Type",
+            "Authorization",
+            "X-Requested-With",
+        ],
+        credentials: true,
+        optionsSuccessStatus: 204,
+    })
+);
 
+// ======================================
+// MIDDLEWARE BODY
+// ======================================
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// ======================================
 // FOLDER UPLOADS STATIC
-app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+// ======================================
+app.use(
+    "/uploads",
+    express.static(path.join(__dirname, "../uploads"))
+);
 
+// ======================================
 // ENDPOINTS API
+// ======================================
 app.use("/api/kamar", kamarRoutes);
 app.use("/api/penghuni", penghuniRoutes);
 app.use("/api/kontrak", kontrakRoutes);
