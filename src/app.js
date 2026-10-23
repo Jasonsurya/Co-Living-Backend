@@ -22,15 +22,18 @@ const app = express();
 // KONFIGURASI CORS
 // ======================================
 const allowedOrigins = [
-    "https://co-living-management-system.vercel.app",
+    "https://co-living-frontend-tau.vercel.app", // Domain Vercel baru Anda
+    "https://co-living-management-system.vercel.app", // Domain lama (cadangan jika diperlukan)
     "http://localhost:5000",
+    "http://localhost:5173", // Port default Vite lokal
 ];
 
 app.use(
     cors({
         origin: (origin, callback) => {
-            // Request tanpa Origin, misalnya server-to-server.
-            if (!origin || allowedOrigins.includes(origin)) {
+            // Izinkan request tanpa origin (seperti Postman atau server-to-server) 
+            // ATAU jika domain ada di list ATAU berakhiran .vercel.app secara otomatis
+            if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
                 return callback(null, true);
             }
 
