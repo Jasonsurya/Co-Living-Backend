@@ -94,7 +94,7 @@ const createKontrak = async ({
   return result.rows[0];
 };
 
-// Perpanjang kontrak sewa (Menutup kontrak lama, mengosongkan saldo lama, meneruskan saldo & DOKUMEN SURAT ke kontrak baru)
+// Perpanjang kontrak sewa
 const perpanjangKontrak = async ({
   kamar_id,
   tanggal_perjanjian,
@@ -106,7 +106,6 @@ const perpanjangKontrak = async ({
   try {
     await client.query("BEGIN");
 
-    // 1. Ambil data kontrak aktif saat ini (Kunci hanya tabel 'kontrak' c)
     const kontrakAktifResult = await client.query(
       `
       SELECT 
@@ -132,7 +131,6 @@ const perpanjangKontrak = async ({
 
     const kontrakLama = kontrakAktifResult.rows[0];
 
-    // 2. Ambil saldo deposit aktual dari kontrak lama secara terpisah
     const saldoLamaResult = await client.query(
       `SELECT saldo FROM saldo_deposit WHERE kontrak_id = $1`,
       [kontrakLama.kontrak_id]
@@ -143,7 +141,6 @@ const perpanjangKontrak = async ({
         ? Number(saldoLamaResult.rows[0].saldo)
         : Number(kontrakLama.deposit || 0);
 
-    // 3. Selesaikan kontrak lama & tandai status_deposit = 'TRANSFERRED'
     await client.query(
       `
       UPDATE kontrak
@@ -154,7 +151,6 @@ const perpanjangKontrak = async ({
       [tanggal_mulai, kontrakLama.kontrak_id]
     );
 
-    // 3b. Set saldo_deposit kontrak lama menjadi 0 karena saldo sudah diteruskan ke kontrak baru
     await client.query(
       `
       UPDATE saldo_deposit
@@ -165,7 +161,6 @@ const perpanjangKontrak = async ({
       [kontrakLama.kontrak_id]
     );
 
-    // 4. Buat kontrak baru
     const kontrakBaruResult = await client.query(
       `
       INSERT INTO kontrak (
@@ -192,7 +187,6 @@ const perpanjangKontrak = async ({
 
     const kontrakBaru = kontrakBaruResult.rows[0];
 
-    // 5. Transfer / Catat Saldo Deposit ke Kontrak Baru
     await client.query(
       `
       INSERT INTO saldo_deposit (kontrak_id, saldo)
@@ -203,7 +197,6 @@ const perpanjangKontrak = async ({
       [kontrakBaru.id, saldoDepositLama]
     );
 
-    // 6. Catat riwayat penerusan deposit ke kontrak baru
     await client.query(
       `
       INSERT INTO riwayat_deposit (kontrak_id, jenis, nominal, keterangan)
@@ -216,7 +209,6 @@ const perpanjangKontrak = async ({
       ]
     );
 
-    // 6b. TRANSFER/SALIN SELURUH DOKUMEN SURAT BERKAS KONTRAK LAMA KE KONTRAK BARU
     await client.query(
       `
       INSERT INTO dokumen_kontrak (kontrak_id, tipe_dokumen, nama_file, path_file)
@@ -275,7 +267,7 @@ const keluarKamar = async (kamarId) => {
 
     const kamarUpdateResult = await client.query(
       `UPDATE kamar
-       SET status = 'EMPTY',
+       SET status = 'AVAILABLE',
            updated_at = CURRENT_TIMESTAMP
        WHERE id = $1
        RETURNING *`,
