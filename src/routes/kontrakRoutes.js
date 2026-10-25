@@ -1,3 +1,4 @@
+// src/routes/kontrakRoutes.js
 const express = require("express");
 const {
   getKontrak,
@@ -12,7 +13,7 @@ const router = express.Router();
 router.get("/", getKontrak);
 router.get("/aktif", getKontrakAktifController);
 router.post("/", tambahKontrak);
-router.post("/perpanjang/:kamarId", perpanjangKontrakController);
-router.post("/keluar/:kamarId", keluarKamarController);
+router.post("/perpanjang/:id", perpanjangKontrakController);
+router.post("/keluar/:id", keluarKamarController);
 
 module.exports = router;
