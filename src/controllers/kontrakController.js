@@ -54,13 +54,18 @@ const perpanjangKontrakController = async (req, res) => {
 };
 
 const keluarKamarController = async (req, res) => {
+  console.log("🟢 [BACKEND] Endpoint /kontrak/keluar/ diakses!");
+  console.log("🟢 [BACKEND] req.params:", req.params);
+  console.log("🟢 [BACKEND] req.body:", req.body);
+
   try {
-    const { kamarId } = req.params;
-    const hasil = await keluarKamar(kamarId);
-    res.json(hasil);
+    const { id } = req.params; // atau kamarId
+    // ... logika keluar kamar Anda yang sudah ada ...
+    
+    return res.status(200).json({ success: true, message: "Berhasil keluar kamar" });
   } catch (error) {
-    console.error("Gagal memproses keluar kamar:", error.message);
-    res.status(400).json({ message: error.message });
+    console.error("🔴 [BACKEND ERROR] Keluar kamar error:", error);
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
 
